@@ -1,0 +1,12 @@
+/data1/logs/nginx/*log {
+    daily
+    rotate 7
+    missingok
+    notifempty
+    sharedscripts
+    dateext
+    postrotate
+        [ ! -f /var/run/nginx.pid ] || kill -HUP `cat /var/run/nginx.pid`
+    endscript
+
+}

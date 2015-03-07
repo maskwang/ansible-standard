@@ -1,0 +1,86 @@
+---
+  - name: www pool nginx app conf
+    action: copy src={{ localpath }}/busspool/nginx/www/xx.conf  dest=/etc/nginx/conf.d/
+
+  - name: logrotate confs
+    action: copy src={{ localpath }}/busspool/logrotate/nginx  dest=/etc/logrotate.d/
+
+  - name: zabbix conf
+    action: copy src={{ localpath }}/busspool/common/zabbix/zabbix_agentd.conf  dest=/usr/local/zabbix-agent-ops/etc/zabbix_agentd.conf
+
+  - name: zabbix service restarted
+    action: command sh -c "/etc/init.d/zabbix-agent-ops restart"
+    #action: service name=zabbix-agent-ops state=restarted
+
+  - name: mkdir  codepath
+    action: file path={{ codepath }} state=directory owner={{ user }} group={{ group }} mode=0755
+
+  - name: mkdir  indexespath
+    action: file path={{ codepath }}/indexes state=directory owner={{ user }} group={{ group }} mode=0755
+
+  - name: write hostname to machine
+    action: command sudo sh -c "/bin/hostname > /home/www/conf/MACHINE_NAME"
+
+  - name: mkdir  dctagentpath
+    action: file path={{ codepath }}/dct-agent state=directory owner={{ user }} group={{ group }} mode=0755
+
+  - name: mkdir dependentpath
+    action: file path={{ codepath }}/dependent state=directory owner={{ user }} group={{ group }} mode=0755
+
+  - name: mkdir  logspath
+    action: file path={{ logspath }} state=directory owner={{ user }} group={{ group }} mode=0777
+
+  - name: mkdir  applogspath
+    action: file path={{ logspath }}/applogs state=directory owner={{ user }} group={{ group }} mode=0777
+
+  - name: cp app fonts folder
+    action: copy src={{ localpath }}/busspool/common/fonts  dest=/usr/share/fonts
+
+  - name: copy yui_starter jar
+    action: copy src={{ localpath }}/busspool/common/yuicompressor-daemon.jar  dest={{ codepath }}/dependent/
+
+  - name: copy yui lib jar
+    action: copy src={{ localpath }}/busspool/common/yuicompressor-2.3.6.jar  dest={{ codepath }}/dependent/
+
+  - name: start yui service
+    action: command  sudo sh -c "/usr/bin/nohup java -jar /home/www/dependent/yuicompressor-daemon.jar 9999 >{{ logspath }}/applogs/yui.log 2>&1 &"
+
+  - name: copy qqwry python files
+    action: copy src={{ localpath }}/busspool/common/qqwry-daemon  dest={{ codepath }}/dependent/
+
+  - name: start qqwry service
+    action: command  sudo sh -c "cd /home/www/dependent/qqwry-daemon/ && /usr/bin/nohup python qqwry-daemon.py > {{ logspath }}/applogs/qqwry.log 2>&1 &"
+
+  - name: add route
+    action: command sudo sh -c "/sbin/route add -net 192.168.0.0 gw 10.10.3.1 netmask 255.255.0.0"
+
+  - name: add route
+    action: command sudo sh -c "/sbin/route del -net 0.0.0.0"
+
+  - name: add route
+    action: command sudo sh -c "/sbin/route add -net 0.0.0.0 gw 10.10.3.27"
+
+
+  - name: auto start nginx
+    file: src=/etc/init.d/nginx dest=/etc/rc2.d/S20nginx owner=root group=root state=link
+    sudo: yes
+
+  - name: auto start php-fpm
+    file: src=/etc/init.d/php-fpm dest=/etc/rc2.d/S20php-fpm owner=root group=root state=link
+    sudo: yes
+
+  - name: auto start cron
+    file: src=/etc/init.d/cron  dest=/etc/rc2.d/S20cron owner=root group=root state=link
+    sudo: yes
+
+  - name: auto start rsyslog
+    file: src=/etc/init.d/rsyslog dest=/etc/rc2.d/S12rsyslog owner=root group=root state=link
+    sudo: yes
+
+  - name: auto start sshd
+    file: src=/etc/init.d/ssh dest=/etc/rc2.d/S12ssh owner=root group=root state=link
+    sudo: yes
+
+  - name: auto start network
+    file: src=/etc/init.d/networking dest=/etc/rc2.d/S10network owner=root group=root state=link
+    sudo: yes

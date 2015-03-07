@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ "Darwin" = "$uname" ];then
+  # install homebrew
+  if ! which brew > /dev/null;then
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+
+  if ! which python > /dev/null;then
+     brew install python
+  fi
+
+  if ! which ansible > /dev/null;then
+    brew install ansible
+  fi
+else
+  sudo apt-get update
+  sudo apt-get install -y --force-yes build-essential python-software-properties python-dev ansible
+fi
+
+# 安装包依赖 TODO
+#$isSudo pip install -U paramiko PyYAML jinja2 httplib2

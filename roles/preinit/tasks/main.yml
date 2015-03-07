@@ -1,0 +1,102 @@
+---
+# 标准机器初始化前准备工作
+# 添加evans账号并同步相应地key
+# 添加ansible账号并同步相应的key
+# 添加wheel组
+# 授予wheel组 nopasswd权限
+
+- name: add group wheel
+  action: group name=wheel state=present
+
+- name: add group {{ group }}
+  action: group name={{ group }} state=present
+
+- name: add user evans
+  action: user name={{ user }} groups={{ group }}  shell=/bin/bash
+
+- name: copy evans pri&pub key
+  action: copy src={{ localpath }}/busspool/common/evanskey/ dest=/home/{{ user }}/.ssh/ owner={{ user }} group={{ group }} mode=0600
+
+- name: add user ansible
+  action: user name=ansible groups=wheel  shell=/bin/bash
+
+- name: copy ansible pub key to auth
+  action: copy src={{ localpath }}/busspool/common/ansiblekey/ dest=/home/ansible/.ssh/ owner=ansible group=wheel mode=0600
+
+- name: copy sa pub key to auth
+  action: copy src={{ localpath }}/busspool/common/sakey/ dest=/root/.ssh/ owner=root group=root mode=0600
+
+- name: add wheel authority
+  action: lineinfile name=/etc/sudoers regexp="^%wheel" line="%wheel ALL=(ALL) NOPASSWD:ALL"
+
+#TODO- name: /usr/sbin/ntpdate {{ ntpserver }}
+#  action: command sh -c "/usr/sbin/ntpdate {{ ntpserver }}"
+
+#- name: add root's crontab
+#  action: lineinfile name=/var/spool/cron/crontabs/root regexp="/usr/sbin/ntpdate" line="0 */6 * * * /usr/sbin/ntpdate {{ ntpserver }}"
+
+- name: cp sources.list
+  action: copy src={{ localpath }}/busspool/apt/sources.list dest=/etc/apt/
+
+#- name: add test.list public gpg key
+#  apt_key: id=E63328C5
+#         url=http://x.x.x.x/test-ubuntu/public.key
+#         state=present
+
+#TODO - name: apt source update
+#  apt: update_cache=yes
+
+
+#弥补kickstart 安装不完善
+- name: libmcrypt-dev & libgmp10
+  action: apt pkg={{ item }} state=present force=yes
+  with_items:
+    - libgmp10
+    - libmcrypt-dev
+
+#弥补kickstart 安装不完善
+- name: vim && soft and so on
+  action: apt pkg={{ item }} state=present force=yes
+  with_items:
+    - vim
+    - openssh-client
+    - ethtool
+    - ifstat
+    - dstat
+    - sysstat
+    - curl
+    - wget
+    - xfsprogs
+
+- name: install zabbix-agent-ops
+  action: apt pkg=zabbix-agent-ops state=present force=yes
+
+- name: zabbix conf
+  action: copy src={{ localpath }}/busspool/common/zabbix/zabbix_agentd.conf  dest=/usr/local/zabbix-agent-ops/etc/zabbix_agentd.conf
+
+- name: zabbix service restarted
+  action: command sh -c "/etc/init.d/zabbix-agent-ops restart"
+
+- name: open user.log and cron log flag
+  action: copy src={{ localpath }}/busspool/common/rsyslog.d_50-default.conf dest=/etc/rsyslog.d/50-default.conf
+
+- name: restart rsyslog
+  action: service name=rsyslog state=restarted
+
+- name: restart cron
+  action: service name=cron state=restarted
+
+- name: chmod user.log 644
+  action: file path=/var/log/user.log  mode=0644
+
+- name: install keychina
+  action: apt pkg=keychain state=present force=yes
+
+- name: cp bash_profile file
+  action: copy src={{ localpath }}/busspool/common/bash_profile dest=/home/evans/.bash_profile owner={{ user }} group={{ group }} mode=0755
+
+- name: cp /etc/rc.local
+  action: copy src={{ localpath }}/busspool/etc/rc.local dest=/etc/rc.local
+
+- name: cp /etc/bash.bashrc
+  action: copy src={{ localpath }}/busspool/etc/bash.bashrc dest=/etc/bash.bashrc

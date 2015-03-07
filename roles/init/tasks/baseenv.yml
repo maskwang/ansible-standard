@@ -1,0 +1,21 @@
+---
+#  - name : change host name
+#    action: command echo app10-090 > /etc/hostname
+
+   - name: open user.log and cron log flag
+     action: copy src={{ localpath }}/busspool/common/rsyslog.d_50-default.conf dest=/etc/rsyslog.d/50-default.conf
+
+   - name: restart rsyslog
+     action: service name=rsyslog state=restarted
+
+   - name: restart cron
+     action: service name=cron state=restarted
+
+   - name: chmod user.log 644
+     action: file path=/var/log/user.log  mode=0644
+
+   - name: install keychina
+     action: apt pkg=keychain state=present force=yes
+
+   - name: cp bash_profile file
+     action: copy src={{ localpath }}/busspool/common/bash_profile dest=/home/evans/.bash_profile owner={{ user }} group={{ group }} mode=0755

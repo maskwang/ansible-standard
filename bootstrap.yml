@@ -1,0 +1,27 @@
+---
+# 标准机器初始化前准备工作
+
+- name: preinit standard machine to all nodes
+  hosts: all
+  remote_user: root
+
+  roles:
+    - preinit
+
+- name: init standard machine to all nodes
+  hosts: all
+  remote_user: root
+  user: ansible
+  sudo: True
+
+  roles:
+    - init
+
+- name: dailywork for standard machine to all nodes
+  hosts: all
+  remote_user: root
+  user: ansible
+  sudo: True
+
+  roles:
+    - dailywork

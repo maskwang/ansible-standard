@@ -1,0 +1,4 @@
+---
+ - include: baseenv.yml
+ - include: softinstall.yml
+ - include: envconf.yml

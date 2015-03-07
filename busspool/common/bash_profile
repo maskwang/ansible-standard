@@ -1,0 +1,15 @@
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin
+
+export PATH
+[[ -s $HOME/.ssh/id_rsa ]] && keychain $HOME/.ssh/id_rsa --host webapp
+[[ -s $HOME/.ssh/id_dsa ]] && keychain $HOME/.ssh/id_dsa --host webapp
+source $HOME/.keychain/webapp-sh

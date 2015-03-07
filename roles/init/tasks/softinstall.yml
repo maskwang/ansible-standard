@@ -1,0 +1,54 @@
+---
+  - name: install nginx
+    action: apt pkg=nginx state=present force=yes
+
+  - name: nginx service shell
+    action: copy src={{ localpath }}/busspool/nginx/nginx  dest=/etc/init.d/
+
+  - name: nginx important conf
+    action: copy src={{ localpath }}/busspool/nginx/nginx.conf  dest=/etc/nginx/
+
+  - name: nginx important conf
+    action: copy src={{ localpath }}/busspool/nginx/status.conf  dest=/etc/nginx/conf.d/
+
+  - name: install php-fpm and php extension
+    action: apt pkg={{ item }} state=present force=yes
+    with_items:
+      - php-solr
+      - php-memcache
+      - php-apc
+      - php-fpm #包含了pdo和pdo_mysql
+      - php-zmq-4.0.4
+      - php-mcrypt
+      - php-mongo
+      - php-msgpack
+      - php-redis
+      - php-xhprof
+
+  - name: php-fpm service shell
+    action: copy src={{ localpath }}/busspool/phpfpm/php-fpm  dest=/etc/init.d/
+
+  - name: php-fpm important conf
+    action: copy src={{ localpath }}/busspool/phpfpm/php-fpm.conf  dest=/usr/local/php-fpm/etc
+
+
+  - name: install  mysql-client-core
+    action: apt pkg=mysql-client-core-5.5 state=present force=yes
+
+#  - name : install  jdk1.6 (oracle sun jdk1.6)
+#    action: apt pkg=jdk1.6 state=present
+
+  - name: install keychain
+    action: apt pkg=keychain state=present force=yes
+
+  - name: install dct-agent（默认带的就有java﻿1.6.0_21）
+    action: apt pkg=ajk-dctagent state=present force=yes
+#
+  - name: install zabbix-agent-ops
+    action: apt pkg=zabbix-agent-ops state=present force=yes
+#
+  - name: set java home_path
+    action: command ln -s /opt/opsc/java/bin/java /usr/bin/java
+
+  - name: set  php home_path
+    action: command ln -s /usr/local/php-fpm/bin/php /usr/bin/php

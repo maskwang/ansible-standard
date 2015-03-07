@@ -1,0 +1,9 @@
+---
+# 做一些部署工作等  
+  - name: reload nginx
+    action: service name=nginx state=reloaded
+    tags: nginx
+
+  - name: reload php-fpm
+    action: service name=php-fpm state=reloaded
+    tags: php-fpm

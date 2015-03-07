@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo '==>如不想输入密码,可以按下部署操作:'
+echo '  1. 把机器id_rsa.pub的内容拷贝到远程机器上~/.ssh/authorized_keys'
+echo '  2. chmod 644 authorized_keys'
+
+export ANSIBLE_NOCOWS=1
+
+cd $ansible_path
+
+# -vvv 输出调试信息   -k 强制输入密码
+ansible-playbook -i hosts bootstrap.yml -vvvv -k

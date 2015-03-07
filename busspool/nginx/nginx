@@ -1,0 +1,123 @@
+#!/bin/bash
+# @author:maskwang
+# chkconfig:
+# description:nginx
+#
+
+
+
+pid=`cat /var/run/nginx.pid 2>/dev/null`
+sbin_path="/usr/local/nginx/sbin/nginx"
+
+RETVAL=0
+
+function is_process_killed(){
+    count=$1
+    pid=$2
+    while [ $count -gt 0 ];
+    do
+        kill -0 $pid
+
+        if [ $? -ne 0 ];then
+            echo -n "killing $pid at ";date
+            sleep 1
+        else
+            echo -n "killed $pid at ";date
+            break;
+        fi
+        count=`expr $count - 1`
+    done
+    return $count;
+}
+
+
+function check() {
+    evans_exec $sbin_path -t
+    return $?
+}
+
+function evans_exec(){
+    exec_command=$@
+    user=`whoami`
+    if [ "$user" = "root" ];then
+        su evans -c "$exec_command"
+    else
+        $exec_command
+    fi
+    return $?
+}
+
+function start() {
+    evans_exec $sbin_path
+
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ];then
+        echo -n "start error"
+    else
+        echo -n "started at ";date
+    fi
+}
+
+function stop() {
+    if [ ! -z "$pid" ];then
+        commendline=`ps -p $pid -o command | tail -n1`
+    else
+        #check by ps
+        ps -eo command |grep -q "^$sbin_path"
+        if [ $? -eq 0 ];then
+            echo "pid file not exists,please kill manual"
+            exit 1
+        else
+            echo "process not start return 0"
+            return 0
+        fi
+    fi
+
+    echo $commendline | grep -qE 'nginx'
+    if [ $? -eq 0 ];then
+        #pid ok
+        kill $pid
+        is_process_killed 10 $pid
+        if [ $? -eq 0 ];then
+            echo "need force kill"
+            kill -9 $pid
+            is_process_killed 10 $pid
+            if [ $? -eq 0 ];then
+                echo "force kill failed ,please kill manual"
+            fi
+        fi
+    else
+        echo "pid file may not nginx process ,please kill manual"
+        exit 2
+    fi
+}
+
+
+
+case "$1" in
+    configtest)
+        check
+        RETVAL=$?
+        ;;
+    start)
+        check && start
+        RETVAL=$?
+        ;;
+    stop)
+        check && stop
+        RETVAL=$?
+        ;;
+    restart|reload)
+        check && stop && start
+        RETVAL=$?
+        ;;
+    status)
+        . /lib/lsb/init-functions
+        status_of_proc -p /data1/logs/nginx/nginx.pid "$sbin_path" nginx && exit 0 || exit $?
+        ;;
+    *)
+        echo $"Usage: $0 {configtest|start|stop|restart}"
+        RETVAL=3
+esac
+
+exit $RETVAL

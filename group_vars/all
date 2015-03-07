@@ -1,0 +1,11 @@
+---
+# Variables listed here are applicable to all host groups
+
+ntpserver: time.apple.com
+localpath: ./
+nginxpath: /etc/nginx/conf.d
+user: evans
+group: www-data
+
+codepath: /home/www
+logspath: /data1/logs
