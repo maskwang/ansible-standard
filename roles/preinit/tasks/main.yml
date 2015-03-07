@@ -29,11 +29,11 @@
 - name: add wheel authority
   action: lineinfile name=/etc/sudoers regexp="^%wheel" line="%wheel ALL=(ALL) NOPASSWD:ALL"
 
-#TODO- name: /usr/sbin/ntpdate {{ ntpserver }}
-#  action: command sh -c "/usr/sbin/ntpdate {{ ntpserver }}"
+- name: /usr/sbin/ntpdate {{ ntpserver }}
+  action: command sh -c "/usr/sbin/ntpdate {{ ntpserver }}"
 
-#- name: add root's crontab
-#  action: lineinfile name=/var/spool/cron/crontabs/root regexp="/usr/sbin/ntpdate" line="0 */6 * * * /usr/sbin/ntpdate {{ ntpserver }}"
+- name: add root's crontab
+  action: lineinfile name=/var/spool/cron/crontabs/root regexp="/usr/sbin/ntpdate" line="0 */6 * * * /usr/sbin/ntpdate {{ ntpserver }}"
 
 - name: cp sources.list
   action: copy src={{ localpath }}/busspool/apt/sources.list dest=/etc/apt/
@@ -43,8 +43,8 @@
 #         url=http://x.x.x.x/test-ubuntu/public.key
 #         state=present
 
-#TODO - name: apt source update
-#  apt: update_cache=yes
+- name: apt source update
+  apt: update_cache=yes
 
 
 #弥补kickstart 安装不完善

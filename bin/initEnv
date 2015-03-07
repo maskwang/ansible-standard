@@ -18,5 +18,5 @@ else
   sudo apt-get install -y --force-yes build-essential python-software-properties python-dev ansible
 fi
 
-# 安装包依赖 TODO
-#$isSudo pip install -U paramiko PyYAML jinja2 httplib2
+# 安装包依赖
+$isSudo pip install -U paramiko PyYAML jinja2 httplib2
